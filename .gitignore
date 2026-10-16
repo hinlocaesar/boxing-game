@@ -1,0 +1,10 @@
+node_modules/
+dist/
+shots/
+
+# Local capture output and editor noise
+*.log
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

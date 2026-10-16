@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ring of Fire &mdash; Boxing</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,800;1,700;1,800;1,900&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="scene"></canvas>
+
+      <!-- ============================ HUD ============================ -->
+      <div id="hud" class="hud hidden" aria-hidden="true">
+        <div class="hud-top">
+          <!-- Player card -->
+          <div class="fighter-card left">
+            <div class="card-row">
+              <span class="fname" id="p1-name">PLAYER</span>
+              <span class="frecord" id="p1-record">0-0-0</span>
+            </div>
+            <div class="bar health"><i id="p1-health"></i><b id="p1-health-dmg"></b></div>
+            <div class="bar stamina"><i id="p1-stamina"></i></div>
+          </div>
+
+          <!-- Center clock -->
+          <div class="clock-block">
+            <div class="round-label" id="round-label">ROUND 1</div>
+            <div class="clock" id="clock">3:00</div>
+          </div>
+
+          <!-- Opponent card (mirrored) -->
+          <div class="fighter-card right">
+            <div class="card-row">
+              <span class="frecord" id="p2-record">0-0-0</span>
+              <span class="fname" id="p2-name">OPPONENT</span>
+            </div>
+            <div class="bar health"><i id="p2-health"></i><b id="p2-health-dmg"></b></div>
+            <div class="bar stamina"><i id="p2-stamina"></i></div>
+          </div>
+        </div>
+
+        <div class="hud-bottom">
+          <div class="ticker">
+            <div class="ticker-tag">FIGHT NIGHT</div>
+            <div class="ticker-text" id="ticker-text">Tale of the tape&hellip;</div>
+          </div>
+          <div class="stat-strip">
+            <div class="stat"><span id="p1-punches">0</span><small>LANDED</small></div>
+            <div class="stat"><span id="p1-acc">0%</span><small>ACC</small></div>
+            <div class="stat mid"><span id="combo">0</span><small>COMBO</small></div>
+            <div class="stat"><span id="p2-acc">0%</span><small>ACC</small></div>
+            <div class="stat"><span id="p2-punches">0</span><small>LANDED</small></div>
+          </div>
+        </div>
+
+        <!-- Center callouts: KO, knockdown counts, warnings -->
+        <div id="callout" class="callout hidden"></div>
+        <div id="prompt" class="prompt hidden"></div>
+
+        <!-- Damage flash -->
+        <div id="dmg-flash" class="dmg-flash"></div>
+        <div id="low-stamina" class="low-stamina"></div>
+
+        <!-- Controls cheatsheet -->
+        <div class="controls-hint" id="controls-hint">
+          <b>MOVE</b> W A S D &nbsp;&nbsp; <b>JAB</b> J &nbsp; <b>STRAIGHT</b> K &nbsp; <b>HOOK</b> L &nbsp;
+          <b>UPPERCUT</b> I &nbsp;&nbsp; <b>BLOCK</b> Space &nbsp; <b>SLIP</b> Q / E &nbsp; <b>LEAN</b> Shift &nbsp; <b>BODY</b> Ctrl
+        </div>
+      </div>
+
+      <!-- ========================== MAIN MENU ========================== -->
+      <div id="menu" class="screen menu">
+        <div class="vignette"></div>
+        <div class="menu-inner">
+          <header class="brand">
+            <div class="brand-top">PREMIER BOXING LEAGUE PRESENTS</div>
+            <h1>RING <span class="of">OF</span> FIRE</h1>
+            <div class="brand-sub">WORLD CHAMPIONSHIP EDITION</div>
+          </header>
+
+          <div class="select-wrap">
+            <section class="select-col">
+              <h2>SELECT YOUR FIGHTER</h2>
+              <div class="roster" id="roster"></div>
+            </section>
+
+            <section class="select-col opts">
+              <h2>FIGHT SETTINGS</h2>
+              <div class="opt" data-opt="difficulty">
+                <label>Difficulty</label>
+                <div class="segmented" data-seg="difficulty">
+                  <button data-val="amateur">Amateur</button>
+                  <button data-val="pro" class="on">Pro</button>
+                  <button data-val="champion">Champion</button>
+                  <button data-val="legend">Legend</button>
+                </div>
+              </div>
+              <div class="opt" data-opt="rounds">
+                <label>Rounds</label>
+                <div class="segmented" data-seg="rounds">
+                  <button data-val="3">3</button>
+                  <button data-val="4">4</button>
+                  <button data-val="6">6</button>
+                  <button data-val="8">8</button>
+                  <button data-val="10">10</button>
+                  <button data-val="12" class="on">12</button>
+                </div>
+              </div>
+              <div class="opt" data-opt="roundlen">
+                <label>Round Length</label>
+                <div class="segmented" data-seg="roundlen">
+                  <button data-val="60">1:00</button>
+                  <button data-val="120">2:00</button>
+                  <button data-val="180" class="on">3:00</button>
+                </div>
+              </div>
+              <div class="opt" data-opt="ailevel">
+                <label>Opponent Rating</label>
+                <div class="segmented" data-seg="ailevel">
+                  <button data-val="0.7">Contender</button>
+                  <button data-val="0.85" class="on">Ranked</button>
+                  <button data-val="1.0">Champion</button>
+                  <button data-val="1.15">Legend</button>
+                </div>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" id="toggle-audio" checked />
+                <span>Broadcast audio</span>
+              </label>
+            </section>
+          </div>
+
+          <button id="start-btn" class="start-btn">TOUCH GLOVES &rarr;</button>
+          <div class="hint-line">Press <kbd>Enter</kbd> to start &middot; Keyboard &amp; Gamepad supported</div>
+        </div>
+      </div>
+
+      <!-- ========================== PAUSE ========================== -->
+      <div id="pause" class="screen hidden">
+        <div class="panel">
+          <h2>PAUSED</h2>
+          <div class="pause-stats" id="pause-stats"></div>
+          <button id="resume-btn" class="btn">Resume</button>
+          <button id="quit-btn" class="btn ghost">Quit to Menu</button>
+        </div>
+      </div>
+
+      <!-- ========================== RESULTS ========================== -->
+      <div id="results" class="screen hidden">
+        <div class="panel wide">
+          <div class="result-banner" id="result-banner">WIN</div>
+          <div class="result-method" id="result-method">Knockout</div>
+          <div class="scorecards" id="scorecards"></div>
+          <div class="fight-stats" id="fight-stats"></div>
+          <button id="rematch-btn" class="btn">Rematch</button>
+          <button id="menu-btn" class="btn ghost">Main Menu</button>
+        </div>
+      </div>
+
+      <!-- ========================== LOADING ========================== -->
+      <div id="loading" class="screen loading">
+        <div class="ring-spinner"></div>
+        <div class="loading-text">ENTERING THE ARENA&hellip;</div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
